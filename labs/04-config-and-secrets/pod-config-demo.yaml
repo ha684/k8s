@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-demo
+spec:
+  containers:
+    - name: demo
+      image: busybox:1.36
+      command: ["sh", "-c", "echo GREETING=$GREETING; echo TOKEN_LEN=$(echo -n $API_TOKEN | wc -c); cat /config/app.properties; sleep 3600"]
+      env:
+        - name: GREETING
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: GREETING
+        - name: API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: API_TOKEN
+      volumeMounts:
+        - name: config
+          mountPath: /config
+  volumes:
+    - name: config
+      configMap:
+        name: app-config
+        items:
+          - key: app.properties
+            path: app.properties
